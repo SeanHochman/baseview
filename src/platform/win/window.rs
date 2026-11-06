@@ -318,7 +318,9 @@ impl BaseviewWindow {
             warn!("Resize request from Host failed: {}. Reverting to previous size.", e);
 
             if let Some(handler) = self.handler.get() {
-                if let Err(e) = handler.resized(new_size) {
+                let previous =
+                    WindowSize::from_physical(previous_size, self.shared_state.scale_factor());
+                if let Err(e) = handler.resized(previous) {
                     warn!("Window Handler failed to resize to previous window size: {}", e);
                 }
             };
@@ -662,7 +664,9 @@ unsafe fn wnd_proc_inner(
             if let Err(e) = window_bv.request_host_resize(new_size) {
                 warn!("Resize request from Host failed: {}. Reverting to previous size.", e);
 
-                if let Err(e) = handler.resized(new_size) {
+                let previous_size =
+                    WindowSize::from_physical(previous, window_state.shared.scale_factor());
+                if let Err(e) = handler.resized(previous_size) {
                     warn!("Window Handler failed to resize to previous window size: {}", e);
                 }
 
@@ -830,3 +834,6 @@ impl WindowHandle {
 pub fn copy_to_clipboard(_data: &str) {
     unimplemented!()
 }
+
+#[cfg(test)]
+mod tests;
